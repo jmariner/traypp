@@ -13,6 +13,7 @@
 #include <components/toggle.hpp>
 
 static constexpr auto WM_TRAY = WM_USER + 1;
+const static auto WM_TASKBARCREATED = RegisterWindowMessage("TaskbarCreated");
 std::map<HWND, std::reference_wrapper<Tray::Tray>> Tray::Tray::trayList;
 
 Tray::Tray::Tray(std::string identifier, Icon icon) : BaseTray(std::move(identifier), icon)
@@ -188,7 +189,7 @@ LRESULT CALLBACK Tray::Tray::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             return 0;
         }
         break;
-    case WM_COMMAND:
+    case WM_COMMAND: {
         MENUITEMINFO winItem{0};
         winItem.fMask = MIIM_DATA | MIIM_ID;
         winItem.cbSize = sizeof(MENUITEMINFO);
@@ -211,6 +212,16 @@ LRESULT CALLBACK Tray::Tray::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                 syncedToggle->onToggled();
                 menu.update();
             }
+        }
+        break;
+    }
+    default:
+        // https://github.com/Soundux/traypp/pull/5
+        if (msg == WM_TASKBARCREATED)
+        {
+            auto &menu = trayList.at(hwnd).get();
+            if (Shell_NotifyIcon(NIM_ADD, &menu.notifyData) == FALSE)
+                throw std::runtime_error("Failed to register tray icon on taskbar created");
         }
         break;
     }
