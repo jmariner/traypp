@@ -48,8 +48,12 @@ Tray::Tray::Tray(std::string identifier, Icon icon) : BaseTray(std::move(identif
     notifyData.uFlags = NIF_ICON | NIF_MESSAGE;
     notifyData.uCallbackMessage = WM_TRAY;
     notifyData.hIcon = this->icon;
+    notifyData.uVersion = NOTIFYICON_VERSION_4;
 
-    if (Shell_NotifyIcon(NIM_ADD, &notifyData) == FALSE)
+    bool addWorked = Shell_NotifyIcon(NIM_ADD, &notifyData);
+    bool setVersionWorked = Shell_NotifyIcon(NIM_SETVERSION, &notifyData);
+
+    if (!addWorked || !setVersionWorked)
     {
         throw std::runtime_error("Failed to register tray icon");
     }
@@ -173,13 +177,37 @@ HMENU Tray::Tray::construct(const std::vector<std::shared_ptr<TrayEntry>> &entri
     return menu;
 }
 
+bool clickEntryItem(Tray::Tray &menu, Tray::TrayEntry *item)
+{
+    if (auto *button = dynamic_cast<Tray::Button *>(item); button)
+    {
+        button->clicked();
+    }
+    else if (auto *toggle = dynamic_cast<Tray::Toggle *>(item); toggle)
+    {
+        toggle->onToggled();
+        menu.update();
+    }
+    else if (auto *syncedToggle = dynamic_cast<Tray::SyncedToggle *>(item); syncedToggle)
+    {
+        syncedToggle->onToggled();
+        menu.update();
+    }
+    else
+    {
+        return false;
+    }
+    return true;
+}
+
 LRESULT CALLBACK Tray::Tray::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
     case WM_TRAY:
-        if (lParam == WM_RBUTTONUP)
+        switch (LOWORD(lParam))
         {
+        case WM_CONTEXTMENU: {
             POINT p;
             GetCursorPos(&p);
             SetForegroundWindow(hwnd);
@@ -187,6 +215,19 @@ LRESULT CALLBACK Tray::Tray::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             auto cmd = TrackPopupMenu(menu.menu, TPM_RETURNCMD | TPM_NONOTIFY, p.x, p.y, 0, hwnd, nullptr);
             SendMessage(hwnd, WM_COMMAND, cmd, 0);
             return 0;
+        }
+        case WM_LBUTTONDBLCLK: {
+            // click first Button or Toggle in entries
+            auto &menu = trayList.at(hwnd).get();
+            for (const auto &entry : menu.entries)
+            {
+                if (clickEntryItem(menu, entry.get()))
+                {
+                    break;
+                }
+            }
+            break;
+        }
         }
         break;
     case WM_COMMAND: {
@@ -198,20 +239,7 @@ LRESULT CALLBACK Tray::Tray::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         if (GetMenuItemInfo(menu.menu, static_cast<UINT>(wParam), FALSE, &winItem))
         {
             auto *item = reinterpret_cast<TrayEntry *>(winItem.dwItemData);
-            if (auto *button = dynamic_cast<Button *>(item); button)
-            {
-                button->clicked();
-            }
-            else if (auto *toggle = dynamic_cast<Toggle *>(item); toggle)
-            {
-                toggle->onToggled();
-                menu.update();
-            }
-            else if (auto *syncedToggle = dynamic_cast<SyncedToggle *>(item); syncedToggle)
-            {
-                syncedToggle->onToggled();
-                menu.update();
-            }
+            clickEntryItem(menu, item);
         }
         break;
     }
