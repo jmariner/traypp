@@ -84,6 +84,14 @@ void Tray::Tray::update()
     SendMessage(hwnd, WM_INITMENUPOPUP, reinterpret_cast<WPARAM>(menu), 0);
 }
 
+void Tray::Tray::setIcon(Icon icon)
+{
+    DestroyIcon(notifyData.hIcon);
+    this->icon = icon;
+    notifyData.hIcon = this->icon;
+    update();
+}
+
 HMENU Tray::Tray::construct(const std::vector<std::shared_ptr<TrayEntry>> &entries, Tray *parent, bool cleanup)
 {
     static auto id = 0;

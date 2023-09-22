@@ -43,6 +43,11 @@ void Tray::Tray::update()
     }
 }
 
+void Tray::Tray::setIcon(Icon icon)
+{
+    throw std::runtime_error("Not implemented");
+}
+
 GtkMenuShell *Tray::Tray::construct(const std::vector<std::shared_ptr<TrayEntry>> &entries, Tray *parent)
 {
     auto *menu = reinterpret_cast<GtkMenuShell *>(gtk_menu_new());

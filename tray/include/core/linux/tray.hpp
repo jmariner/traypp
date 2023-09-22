@@ -19,6 +19,7 @@ namespace Tray
             addEntries(entries...);
         }
 
+        void setIcon(Icon icon) override;
         void run() override;
         void exit() override;
         void update() override;
