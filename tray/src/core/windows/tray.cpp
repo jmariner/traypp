@@ -45,9 +45,10 @@ Tray::Tray::Tray(std::string identifier, Icon icon) : BaseTray(std::move(identif
     memset(&notifyData, 0, sizeof(NOTIFYICONDATA));
     notifyData.cbSize = sizeof(NOTIFYICONDATA);
     notifyData.hWnd = hwnd;
-    notifyData.uFlags = NIF_ICON | NIF_MESSAGE;
+    notifyData.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP;
     notifyData.uCallbackMessage = WM_TRAY;
     notifyData.hIcon = this->icon;
+    strcpy(notifyData.szTip, this->identifier.c_str());
     notifyData.uVersion = NOTIFYICON_VERSION_4;
 
     bool addWorked = Shell_NotifyIcon(NIM_ADD, &notifyData);
@@ -87,6 +88,12 @@ void Tray::Tray::update()
         throw std::runtime_error("Failed to update tray icon");
     }
     SendMessage(hwnd, WM_INITMENUPOPUP, reinterpret_cast<WPARAM>(menu), 0);
+}
+
+void Tray::Tray::setTooltip(std::string tooltip)
+{
+    strcpy(notifyData.szTip, tooltip.c_str());
+    update();
 }
 
 void Tray::Tray::setIcon(Icon icon)

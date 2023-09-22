@@ -43,6 +43,11 @@ void Tray::Tray::update()
     }
 }
 
+void Tray::Tray::setTooltip(std::string tooltip)
+{
+    throw std::runtime_error("Not implemented");
+}
+
 void Tray::Tray::setIcon(Icon icon)
 {
     throw std::runtime_error("Not implemented");

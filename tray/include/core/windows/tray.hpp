@@ -27,6 +27,7 @@ namespace Tray
             addEntries(entries...);
         }
 
+        void setTooltip(std::string tooltip) override;
         void setIcon(Icon icon) override;
         void run() override;
         void exit() override;

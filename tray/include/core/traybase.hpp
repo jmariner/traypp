@@ -34,6 +34,7 @@ namespace Tray
             return std::dynamic_pointer_cast<std::decay_t<T>>(back);
         }
 
+        virtual void setTooltip(std::string tooltip) = 0;
         virtual void setIcon(Icon icon) = 0;
         virtual void run() = 0;
         virtual void exit() = 0;
