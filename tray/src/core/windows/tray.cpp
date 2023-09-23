@@ -268,8 +268,13 @@ LRESULT CALLBACK Tray::Tray::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         if (msg == WM_TASKBARCREATED)
         {
             auto &menu = trayList.at(hwnd).get();
-            if (Shell_NotifyIcon(NIM_ADD, &menu.notifyData) == FALSE)
+            bool addWorked = Shell_NotifyIcon(NIM_ADD, &menu.notifyData);
+            bool setVersionWorked = Shell_NotifyIcon(NIM_SETVERSION, &menu.notifyData);
+
+            if (!addWorked || !setVersionWorked)
+            {
                 throw std::runtime_error("Failed to register tray icon on taskbar created");
+            }
         }
         break;
     }
