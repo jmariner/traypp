@@ -40,3 +40,17 @@ void Tray::TrayEntry::setDisabled(bool state)
         parent->update();
     }
 }
+
+bool Tray::TrayEntry::isDefault() const
+{
+    return defaultEntry;
+}
+
+void Tray::TrayEntry::setDefault(bool state)
+{
+    defaultEntry = state;
+    if (parent)
+    {
+        parent->update();
+    }
+}

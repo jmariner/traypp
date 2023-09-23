@@ -179,6 +179,14 @@ HMENU Tray::Tray::construct(const std::vector<std::shared_ptr<TrayEntry>> &entri
         }
 
         InsertMenuItem(menu, id, TRUE, &winItem);
+
+        if (item->isDefault())
+        {
+            if (!SetMenuDefaultItem(menu, winItem.wID, FALSE))
+            {
+                throw std::runtime_error("Failed to set default menu item");
+            }
+        }
     }
 
     return menu;
@@ -224,14 +232,19 @@ LRESULT CALLBACK Tray::Tray::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             return 0;
         }
         case WM_LBUTTONDBLCLK: {
-            // click first Button or Toggle in entries
             auto &menu = trayList.at(hwnd).get();
-            for (const auto &entry : menu.entries)
+
+            // get default menu item id
+            UINT defaultID = GetMenuDefaultItem(menu.menu, FALSE, 0);
+
+            // get menu item info and click it
+            MENUITEMINFO winItem{0};
+            winItem.fMask = MIIM_DATA | MIIM_ID;
+            winItem.cbSize = sizeof(MENUITEMINFO);
+            if (GetMenuItemInfo(menu.menu, defaultID, FALSE, &winItem))
             {
-                if (clickEntryItem(menu, entry.get()))
-                {
-                    break;
-                }
+                auto *item = reinterpret_cast<TrayEntry *>(winItem.dwItemData);
+                clickEntryItem(menu, item);
             }
             break;
         }

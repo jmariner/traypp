@@ -9,6 +9,7 @@ namespace Tray
       protected:
         std::string text;
         bool disabled = false;
+        bool defaultEntry = false;
         BaseTray *parent = nullptr;
 
       public:
@@ -23,5 +24,8 @@ namespace Tray
 
         void setDisabled(bool);
         bool isDisabled() const;
+
+        void setDefault(bool state = true);
+        bool isDefault() const;
     };
 } // namespace Tray
