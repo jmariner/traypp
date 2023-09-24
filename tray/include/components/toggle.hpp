@@ -15,6 +15,7 @@ namespace Tray
             std::string text, bool state, std::function<void(bool)> callback = [](bool /**/) {});
 
         void onToggled();
+        void setToggledNoCallback(bool state);
         bool isToggled() const;
     };
 } // namespace Tray
