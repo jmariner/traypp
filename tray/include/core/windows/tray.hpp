@@ -30,6 +30,7 @@ namespace Tray
         void setTooltip(std::string tooltip) override;
         void setIcon(Icon icon) override;
         void run() override;
+        void pump() override;
         void exit() override;
         void update() override;
     };

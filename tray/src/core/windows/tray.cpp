@@ -291,4 +291,14 @@ void Tray::Tray::run()
     }
 }
 
+void Tray::Tray::pump()
+{
+    static MSG msg;
+    if (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+}
+
 #endif
